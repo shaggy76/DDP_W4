@@ -1,0 +1,88 @@
+---
+title: "Developing Data Products Assignment 4"
+author: "Scott Harrison"
+date: "December 18, 2016"
+output:
+  ioslides_presentation: default
+  beamer_presentation: default
+  slidy_presentation: default
+always_allow_html: yes
+---
+
+```{r setup}
+```
+
+##Key US Interest Rate Correlations  
+
+In US Financial Markets some rates are strongly related to each other.  In particular, it is said that the 30-Year Mortgage rate follows the 10-Year Treasury Bond rate.  
+
+Also, the Federal Reserve Funds rate is a key driver of other rates as well.  In some contexts, it is assumed that all long term rates are a built of short term rates.  
+
+The app included here is a simple app that shows these rates for the last forty years and gives the user to test the correlations over different years in the past.
+
+##Data Source
+
+All data is sourced form the St Louis Fred website using an API Built into the R Code.  The data series are listed below.  More info can be found at the St Louis Fred site can be found at https://fred.stlouisfed.org/
+
+##Data Series Citations
+
+Board of Governors of the Federal Reserve System (US), 10-Year Treasury Constant Maturity Rate [WGS10YR], retrieved from FRED, Federal Reserve Bank of St. Louis; https://fred.stlouisfed.org/series/WGS10YR, December 18, 2016  
+
+Freddie Mac, 30-Year Fixed Rate Mortgage Average in the United States© [MORTGAGE30US], retrieved from FRED, Federal Reserve Bank of St. Louis; https://fred.stlouisfed.org/series/MORTGAGE30US, December 18, 2016  
+
+Board of Governors of the Federal Reserve System (US), Effective Federal Funds Rate [FF], retrieved from FRED, Federal Reserve Bank of St. Louis; https://fred.stlouisfed.org/series/FF, December 18, 2016  
+
+##API Pull
+
+The API call to pull data from the St. Louis Fred is a url string that returns JSON data.  That can then be parsed into a data fraom using `library(jsonlite)`.
+
+```{r include = TRUE, eval = FALSE}
+api_key <- "xxxxx"
+file_type <- "json"
+series <- c("MORTGAGE30US", "WGS10YR", "FF")
+observation_start <- "1975-01-01"
+observation_end <- "2017-01-01"
+url <- paste("https://api.stlouisfed.org/fred/series/observations?",
+             "&series_id=", series[1], "&api_key=", api_key,
+             "&file_type=", file_type,
+             "&observation_start=", observation_start,
+             "&observation_end=", observation_end,
+             sep = "")
+mort <- fromJSON(txt = url)
+mort$observations$date <- as.Date(mort$observations$date, "%Y-%m-%d")
+mort$observations$value <- as.numeric(mort$observations$value)
+```
+
+##Sample Output
+
+After running this a sample of the output in a data frame is below.
+
+```{r echo = FALSE, eval = TRUE}
+library(jsonlite)
+
+api_key <- "5c569dd027d503376b3429eb11921ca3"
+file_type <- "json"
+series <- c("MORTGAGE30US", "WGS10YR", "FF")
+observation_start <- "1975-01-01"
+observation_end <- "2017-01-01"
+url <- paste("https://api.stlouisfed.org/fred/series/observations?",
+             "&series_id=", series[1],
+             "&api_key=", api_key,
+             "&file_type=", file_type,
+             "&observation_start=", observation_start,
+             "&observation_end=", observation_end,
+             sep = "")
+
+mort <- fromJSON(txt = url)
+mort$observations$date <- as.Date(mort$observations$date, "%Y-%m-%d")
+mort$observations$value <- as.numeric(mort$observations$value)
+head(mort$observations)
+```
+
+##Conclusion
+
+Using this freely available data and shiny, a self-serve analysis tool is possible.  The app is located at  
+
+https://ksharrison.shinyapps.io/DDP_Assignment4/  
+
+Other rates are available and this is a quick way to combine economic data and R into a user friendly interface for users that may want to do statistical anlalysis on this data, but may not have the R expertise to do it.  Also, it just saves time downloading and processing as well.
